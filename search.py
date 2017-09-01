@@ -61,6 +61,33 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+class Space:
+
+	def __init__(self, state):
+		self.route = []
+		self.state = state
+		self.cost = 0
+
+	def addMove (self, move):
+		self.route.append(move)
+
+	def getRoute (self):
+		return self.route
+
+	def setRoute (self, move):
+		self.route = move[:]
+
+	def getCost (self):
+		return self.cost
+
+	def setCost (self, cost):
+		self.cost = cost
+
+	def currentState(self):
+		return self.state
+
+def createSpace(state):
+	return Space(state)
 
 def tinyMazeSearch(problem):
     """
@@ -86,8 +113,33 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    start = problem.getStartState()
+    edge = util.Stack()
+    edge.push(createSpace(start))
+    visited = []
+
+    while not edge.isEmpty(): #while the stack is not empty
+    	route = edge.pop() 
+
+    	if problem.isGoalState(route.currentState()): #if current state is the goal then return route
+    		return route.getRoute()
+
+    	if route.currentState() not in visited: #if the current state has not been visited
+    		nowState = route.currentState() 
+    		visited.append(nowState) #mark the current state as visited
+
+    		successors = []
+    		for notvisited in problem.getSuccessors(route.currentState()): #check every unvisited successor
+    			if notvisited[0] not in visited:
+    				newRoute = createSpace(notvisited[0])
+    				newRoute.setRoute(route.getRoute())
+    				newRoute.addMove(notvisited[1])
+    				newRoute.setCost(notvisited[2] + route.getCost())
+    				successors.append(newRoute)
+
+    		for tempState in successors:
+    			edge.push(tempState)
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
