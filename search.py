@@ -120,31 +120,65 @@ def depthFirstSearch(problem):
     visited = []
 
     while not edge.isEmpty(): #while the stack is not empty
-    	route = edge.pop() 
+    	currentSpace = edge.pop() 
 
-    	if problem.isGoalState(route.currentState()): #if current state is the goal then return route
-    		return route.getRoute()
+    	if problem.isGoalState(currentSpace.currentState()): #if current state is the goal then return currentSpace
+    		return currentSpace.getRoute()
 
-    	if route.currentState() not in visited: #if the current state has not been visited
-    		nowState = route.currentState() 
+    	if currentSpace.currentState() not in visited: #if the current state has not been visited
+    		nowState = currentSpace.currentState() 
     		visited.append(nowState) #mark the current state as visited
 
     		successors = []
-    		for notvisited in problem.getSuccessors(route.currentState()): #check every unvisited successor
+    		for notvisited in problem.getSuccessors(currentSpace.currentState()): #check every unvisited successor
     			if notvisited[0] not in visited:
     				newRoute = createSpace(notvisited[0])
-    				newRoute.setRoute(route.getRoute())
+    				newRoute.setRoute(currentSpace.getRoute())
     				newRoute.addMove(notvisited[1])
-    				newRoute.setCost(notvisited[2] + route.getCost())
+    				newRoute.setCost(notvisited[2] + currentSpace.getCost())
     				successors.append(newRoute)
 
     		for tempState in successors:
     			edge.push(tempState)
 
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """Search the shallowest nodes in the search tree first.
+
+    create a queue Q
+	mark v as visited adn out v into Q
+	while Q is non-empty
+		remove the head u of Q
+		mark and enqueue all (unvisited) neighbors of u
+	
+    """
+    start = problem.getStartState()
+    edge = util.PriorityQueue()
+    edge.push(createSpace(start), 0)
+    visited = []
+
+    while not edge.isEmpty(): #while the stack is not empty
+    	currentSpace = edge.pop() 
+
+    	if problem.isGoalState(currentSpace.currentState()): #if current state is the goal then return currentSpace
+    		return currentSpace.getRoute()
+
+    	if currentSpace.currentState() not in visited: #if the current state has not been visited
+    		nowState = currentSpace.currentState() 
+    		visited.append(nowState) #mark the current state as visited
+
+    		successors = []
+    		for notvisited in problem.getSuccessors(currentSpace.currentState()): #check every unvisited successor
+    			if notvisited[0] not in visited:
+    				newRoute = createSpace(notvisited[0])
+    				newRoute.setRoute(currentSpace.getRoute())
+    				newRoute.addMove(notvisited[1])
+    				newRoute.setCost(notvisited[2] + currentSpace.getCost())
+    				successors.append(newRoute)
+
+    		for tempState in successors:
+    			depth = len(tempState.getRoute())
+    			edge.push(tempState, depth)
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
