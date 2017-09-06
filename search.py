@@ -10,6 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+from ast import iter_child_nodes
 
 
 """
@@ -142,7 +143,9 @@ def uniformCostSearch(problem):
             closed.append(node[0])
             for child_node in reversed(problem.getSuccessors(node[0])):
                 actions = node[3] + [child_node[1]]
-                fringe.push(child_node+ (actions,), node[2] + child_node[2])
+                cost = child_node[2]+ node[2]
+                new_node = child_node[:2] + (cost,) + (actions,)
+                fringe.push(new_node, cost)
 
 def nullHeuristic(state, problem=None):
     """
@@ -154,8 +157,24 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    closed = []
+    fringe = util.PriorityQueue()
+    fringe.push((problem.getStartState(), None, 0, []), 0)
+    while True:
+        if fringe.isEmpty():
+            return None
+        node = fringe.pop()
+            
+        if problem.isGoalState(node[0]):
+            return node[3]
+        
+        if node[0] not in closed:
+            closed.append(node[0])
+            for child_node in reversed(problem.getSuccessors(node[0])):
+                actions = node[3] + [child_node[1]]
+                cost = child_node[2]+ node[2]
+                new_node = child_node[:2] + (cost,) + (actions,)
+                fringe.push(new_node, cost + heuristic(child_node[0],problem))
 
 # Abbreviations
 bfs = breadthFirstSearch
