@@ -10,6 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+from ast import iter_child_nodes
 
 
 """
@@ -61,33 +62,6 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
-class Space:
-
-	def __init__(self, state):
-		self.route = []
-		self.state = state
-		self.cost = 0
-
-	def addMove (self, move):
-		self.route.append(move)
-
-	def getRoute (self):
-		return self.route
-
-	def setRoute (self, move):
-		self.route = move[:]
-
-	def getCost (self):
-		return self.cost
-
-	def setCost (self, cost):
-		self.cost = cost
-
-	def currentState(self):
-		return self.state
-
-def createSpace(state):
-	return Space(state)
 
 def tinyMazeSearch(problem):
     """
@@ -113,77 +87,65 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-
-    start = problem.getStartState()
-    edge = util.Stack()
-    edge.push(createSpace(start))
-    visited = []
-
-    while not edge.isEmpty(): #while the stack is not empty
-    	currentSpace = edge.pop() 
-
-    	if problem.isGoalState(currentSpace.currentState()): #if current state is the goal then return currentSpace
-    		return currentSpace.getRoute()
-
-    	if currentSpace.currentState() not in visited: #if the current state has not been visited
-    		nowState = currentSpace.currentState() 
-    		visited.append(nowState) #mark the current state as visited
-
-    		successors = []
-    		for notvisited in problem.getSuccessors(currentSpace.currentState()): #check every unvisited successor
-    			if notvisited[0] not in visited:
-    				newRoute = createSpace(notvisited[0])
-    				newRoute.setRoute(currentSpace.getRoute())
-    				newRoute.addMove(notvisited[1])
-    				newRoute.setCost(notvisited[2] + currentSpace.getCost())
-    				successors.append(newRoute)
-
-    		for tempState in successors:
-    			edge.push(tempState)
-
+    "*** YOUR CODE HERE ***"
+    closed = []
+    fringe = util.Stack()
+    fringe.push((problem.getStartState(), None, 0, []))
+    while True:
+        if fringe.isEmpty():
+            return None
+        node = fringe.pop()
+            
+        if problem.isGoalState(node[0]):
+            return node[3]
+        
+        if node[0] not in closed:
+            closed.append(node[0])
+            for child_node in reversed(problem.getSuccessors(node[0])):
+                actions = node[3] + [child_node[1]]
+                fringe.push(child_node+ (actions,))
+                    
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first.
-
-    create a queue Q
-	mark v as visited adn out v into Q
-	while Q is non-empty
-		remove the head u of Q
-		mark and enqueue all (unvisited) neighbors of u
-	
-    """
-    start = problem.getStartState()
-    edge = util.PriorityQueue()
-    edge.push(createSpace(start), 0)
-    visited = []
-
-    while not edge.isEmpty(): #while the stack is not empty
-    	currentSpace = edge.pop() 
-
-    	if problem.isGoalState(currentSpace.currentState()): #if current state is the goal then return currentSpace
-    		return currentSpace.getRoute()
-
-    	if currentSpace.currentState() not in visited: #if the current state has not been visited
-    		nowState = currentSpace.currentState() 
-    		visited.append(nowState) #mark the current state as visited
-
-    		successors = []
-    		for notvisited in problem.getSuccessors(currentSpace.currentState()): #check every unvisited successor
-    			if notvisited[0] not in visited:
-    				newRoute = createSpace(notvisited[0])
-    				newRoute.setRoute(currentSpace.getRoute())
-    				newRoute.addMove(notvisited[1])
-    				newRoute.setCost(notvisited[2] + currentSpace.getCost())
-    				successors.append(newRoute)
-
-    		for tempState in successors:
-    			depth = len(tempState.getRoute())
-    			edge.push(tempState, depth)
-
+    """Search the shallowest nodes in the search tree first."""
+    "*** YOUR CODE HERE ***"
+    closed = []
+    fringe = util.Queue()
+    fringe.push((problem.getStartState(), None, 0, []))
+    while True:
+        if fringe.isEmpty():
+            return None
+        node = fringe.pop()
+            
+        if problem.isGoalState(node[0]):
+            return node[3]
+        
+        if node[0] not in closed:
+            closed.append(node[0])
+            for child_node in reversed(problem.getSuccessors(node[0])):
+                actions = node[3] + [child_node[1]]
+                fringe.push(child_node+ (actions,))
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    closed = []
+    fringe = util.PriorityQueue()
+    fringe.push((problem.getStartState(), None, 0, []), 0)
+    while True:
+        if fringe.isEmpty():
+            return None
+        node = fringe.pop()
+            
+        if problem.isGoalState(node[0]):
+            return node[3]
+        
+        if node[0] not in closed:
+            closed.append(node[0])
+            for child_node in reversed(problem.getSuccessors(node[0])):
+                actions = node[3] + [child_node[1]]
+                cost = child_node[2]+ node[2]
+                new_node = child_node[:2] + (cost,) + (actions,)
+                fringe.push(new_node, cost)
 
 def nullHeuristic(state, problem=None):
     """
@@ -195,8 +157,24 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    closed = []
+    fringe = util.PriorityQueue()
+    fringe.push((problem.getStartState(), None, 0, []), 0)
+    while True:
+        if fringe.isEmpty():
+            return None
+        node = fringe.pop()
+            
+        if problem.isGoalState(node[0]):
+            return node[3]
+        
+        if node[0] not in closed:
+            closed.append(node[0])
+            for child_node in reversed(problem.getSuccessors(node[0])):
+                actions = node[3] + [child_node[1]]
+                cost = child_node[2]+ node[2]
+                new_node = child_node[:2] + (cost,) + (actions,)
+                fringe.push(new_node, cost + heuristic(child_node[0],problem))
 
 # Abbreviations
 bfs = breadthFirstSearch
