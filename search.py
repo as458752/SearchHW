@@ -10,7 +10,6 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-from ast import iter_child_nodes
 
 
 """
@@ -91,7 +90,7 @@ def depthFirstSearch(problem):
     closed = []
     fringe = util.Stack()
     fringe.push((problem.getStartState(), None, 0, []))
-    while True:
+    while not fringe.isEmpty():
         if fringe.isEmpty():
             return None
         node = fringe.pop()
@@ -111,7 +110,7 @@ def breadthFirstSearch(problem):
     closed = []
     fringe = util.Queue()
     fringe.push((problem.getStartState(), None, 0, []))
-    while True:
+    while not fringe.isEmpty():
         if fringe.isEmpty():
             return None
         node = fringe.pop()
@@ -131,7 +130,7 @@ def uniformCostSearch(problem):
     closed = []
     fringe = util.PriorityQueue()
     fringe.push((problem.getStartState(), None, 0, []), 0)
-    while True:
+    while not fringe.isEmpty():
         if fringe.isEmpty():
             return None
         node = fringe.pop()
@@ -160,7 +159,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     closed = []
     fringe = util.PriorityQueue()
     fringe.push((problem.getStartState(), None, 0, []), 0)
-    while True:
+    while not fringe.isEmpty():
         if fringe.isEmpty():
             return None
         node = fringe.pop()
