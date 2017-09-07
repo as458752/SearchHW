@@ -10,6 +10,8 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+from ctypes.wintypes import SHORT
+import dis
 
 
 """
@@ -482,24 +484,76 @@ def foodHeuristic(state, problem):
     if len(foodList) == 0:
         return 0
 
-    #Find the farthest food away
+    cornerFood = [position, position, position, position] # (left, right, top, bottom)
+    #Find the farthest food in four directions
     for food in foodList:
-        minDistance = util.manhattanDistance(position, food)
-        if minDistance > heuristic:
-            heuristic = minDistance
-            maxFoodPosition = food
+        if food[0] < cornerFood[0][0]:
+            cornerFood[0] = food
+        elif food[0] > cornerFood[1][0]:
+            cornerFood[1] = food
+        if food[1] < cornerFood[3][1]:
+            cornerFood[3] = food
+        elif food[1] > cornerFood[2][1]:
+            cornerFood[2] = food
     
-    #Add the number of food in the opposite direction of the maxFoodPosition - This prunes out a couple of nodes expanded
+    
+    middleFood = [(None, 0), (None, 0), (None, 0), (None, 0)]
     for food in foodList:
-    	if position[0] - maxFoodPosition[0] > 0: #If the distance between max food and current position is positive
-    		if position[0] - food[0] < 0: #If the distance between current food and current position is negative
-    			oppositeCount = oppositeCount + 1
+        disToCenter = [food[0] - position[0], food[1] - position[1]]
+        if disToCenter[0] > 0 and disToCenter[1] > 0:
+            # in 1st region
+            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), cornerFood[2][1] - food[1], cornerFood[1][0]- food[0]])
+            if dis > middleFood[0][1]:
+                newNode = (food, dis)
+                middleFood[0] = newNode
+        elif disToCenter[0] < 0 and disToCenter[1] > 0:
+            # in 2nd region
+            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), cornerFood[2][1] - food[1], food[0] - cornerFood[0][0]])
+            if dis > middleFood[1][1]:
+                newNode = (food, dis)
+                middleFood[1] = newNode
+        elif disToCenter[0] < 0 and disToCenter[1] < 0:
+            # in 3rd region  
+            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), food[1] - cornerFood[3][1], food[0] - cornerFood[0][0]])
+            if dis > middleFood[2][1]:
+                newNode = (food, dis)
+                middleFood[2] = newNode
+        elif disToCenter[0] > 0 and disToCenter[1] < 0:
+            # in 4th region
+            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), food[1] - cornerFood[3][1], cornerFood[1][0] - food[0]])
+            if dis > middleFood[3][1]:
+                newNode = (food, dis)
+                middleFood[3] = newNode
 
-    	elif position[0] - maxFoodPosition[0] < 0: #If the distance between max food and current position is negative
-    		if position[0] - food[0] > 0: #If the distance between current food and current position is positive
-    			oppositeCount = oppositeCount + 1
-
-    return heuristic + oppositeCount
+    
+    """        
+    middleFood = None
+    largestDis = 0
+    for food in foodList:
+        if food not in cornerFood:
+            dis = util.manhattanDistance(food, position)
+            for corner in cornerFood:
+                dis = dis + util.manhattanDistance(corner,food)
+            if dis > largestDis:
+                largestDis = dis
+                middleFood = food
+    """
+    for mFood in middleFood:
+        if mFood[0] != None:
+            cornerFood.append(mFood[0])
+            
+    permutation = itertools.permutations(cornerFood)
+    shortestDis = 0
+    for path in permutation:
+        dis = 0
+        startPoint = position
+        for node in path:
+            dis = dis + util.manhattanDistance(startPoint, node)
+            startPoint = node
+        if shortestDis == 0 or dis < shortestDis:
+            shortestDis = dis
+    
+    return shortestDis
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
