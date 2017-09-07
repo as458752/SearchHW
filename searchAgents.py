@@ -476,16 +476,30 @@ def foodHeuristic(state, problem):
     position, foodGrid = state
     heuristic = -1
     foodList = foodGrid.asList()
+    oppositeCount = 0
+
 
     if len(foodList) == 0:
         return 0
 
+    #Find the farthest food away
     for food in foodList:
         minDistance = util.manhattanDistance(position, food)
         if minDistance > heuristic:
             heuristic = minDistance
+            maxFoodPosition = food
+    
+    #Add the number of food in the opposite direction of the maxFoodPosition - This prunes out a couple of nodes expanded
+    for food in foodList:
+    	if position[0] - maxFoodPosition[0] > 0: #If the distance between max food and current position is positive
+    		if position[0] - food[0] < 0: #If the distance between current food and current position is negative
+    			oppositeCount = oppositeCount + 1
 
-    return heuristic + len(foodList) - 1
+    	elif position[0] - maxFoodPosition[0] < 0: #If the distance between max food and current position is negative
+    		if position[0] - food[0] > 0: #If the distance between current food and current position is positive
+    			oppositeCount = oppositeCount + 1
+
+    return heuristic + oppositeCount
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -515,7 +529,6 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
-        "*** YOUR CODE HERE ***"
         return search.aStarSearch(problem, search.nullHeuristic)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -551,7 +564,6 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         """
         x,y = state
 
-        "*** YOUR CODE HERE ***"
         return self.food[x][y]
 
 def mazeDistance(point1, point2, gameState):
