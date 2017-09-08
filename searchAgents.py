@@ -10,8 +10,6 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-from ctypes.wintypes import SHORT
-import dis
 
 
 """
@@ -331,12 +329,14 @@ class CornersProblem(search.SearchProblem):
             if not hitsWall:
                 cornersLeft = state[1][:]
                 nextAction = (nextx, nexty)
-
+                
+                # remove the corner from cornersLeft
                 if nextAction in cornersLeft:
                     tempList = list(cornersLeft)
                     tempList.remove(nextAction)
                     cornersLeft = tuple(tempList)
                 
+                #  append a triples, (successor, action, stepCost)
                 successors.append(((nextAction, cornersLeft), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
@@ -373,6 +373,7 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
+    # get permutation of all 4 conrner
     permutation = itertools.permutations(state[1])
     shortestDis = 0
     for path in permutation:
@@ -483,9 +484,9 @@ def foodHeuristic(state, problem):
 
     if len(foodList) == 0:
         return 0
-
-    cornerFood = [position, position, position, position] # (left, right, top, bottom)
-    #Find the farthest food in four directions
+    
+    cornerFood = [position, position, position, position] #(left, right, top, bottom)
+    #Find the farthest food away
     for food in foodList:
         if food[0] < cornerFood[0][0]:
             cornerFood[0] = food
@@ -496,52 +497,7 @@ def foodHeuristic(state, problem):
         elif food[1] > cornerFood[2][1]:
             cornerFood[2] = food
     
-    
-    middleFood = [(None, 0), (None, 0), (None, 0), (None, 0)]
-    for food in foodList:
-        disToCenter = [food[0] - position[0], food[1] - position[1]]
-        if disToCenter[0] > 0 and disToCenter[1] > 0:
-            # in 1st region
-            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), cornerFood[2][1] - food[1], cornerFood[1][0]- food[0]])
-            if dis > middleFood[0][1]:
-                newNode = (food, dis)
-                middleFood[0] = newNode
-        elif disToCenter[0] < 0 and disToCenter[1] > 0:
-            # in 2nd region
-            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), cornerFood[2][1] - food[1], food[0] - cornerFood[0][0]])
-            if dis > middleFood[1][1]:
-                newNode = (food, dis)
-                middleFood[1] = newNode
-        elif disToCenter[0] < 0 and disToCenter[1] < 0:
-            # in 3rd region  
-            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), food[1] - cornerFood[3][1], food[0] - cornerFood[0][0]])
-            if dis > middleFood[2][1]:
-                newNode = (food, dis)
-                middleFood[2] = newNode
-        elif disToCenter[0] > 0 and disToCenter[1] < 0:
-            # in 4th region
-            dis = min([abs(disToCenter[0]), abs(disToCenter[1]), food[1] - cornerFood[3][1], cornerFood[1][0] - food[0]])
-            if dis > middleFood[3][1]:
-                newNode = (food, dis)
-                middleFood[3] = newNode
-
-    
-    """        
-    middleFood = None
-    largestDis = 0
-    for food in foodList:
-        if food not in cornerFood:
-            dis = util.manhattanDistance(food, position)
-            for corner in cornerFood:
-                dis = dis + util.manhattanDistance(corner,food)
-            if dis > largestDis:
-                largestDis = dis
-                middleFood = food
-    """
-    for mFood in middleFood:
-        if mFood[0] != None:
-            cornerFood.append(mFood[0])
-            
+    # get the permutation of all 4 corners
     permutation = itertools.permutations(cornerFood)
     shortestDis = 0
     for path in permutation:
@@ -552,7 +508,7 @@ def foodHeuristic(state, problem):
             startPoint = node
         if shortestDis == 0 or dis < shortestDis:
             shortestDis = dis
-    
+
     return shortestDis
 
 class ClosestDotSearchAgent(SearchAgent):
