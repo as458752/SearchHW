@@ -477,39 +477,21 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    heuristic = -1
+    heuristic = 0
     foodList = foodGrid.asList()
-    oppositeCount = 0
 
 
     if len(foodList) == 0:
         return 0
-    
-    cornerFood = [position, position, position, position] #(left, right, top, bottom)
+
     #Find the farthest food away
     for food in foodList:
-        if food[0] < cornerFood[0][0]:
-            cornerFood[0] = food
-        elif food[0] > cornerFood[1][0]:
-            cornerFood[1] = food
-        if food[1] < cornerFood[3][1]:
-            cornerFood[3] = food
-        elif food[1] > cornerFood[2][1]:
-            cornerFood[2] = food
-    
-    # get the permutation of all 4 corners
-    permutation = itertools.permutations(cornerFood)
-    shortestDis = 0
-    for path in permutation:
-        dis = 0
-        startPoint = position
-        for node in path:
-            dis = dis + util.manhattanDistance(startPoint, node)
-            startPoint = node
-        if shortestDis == 0 or dis < shortestDis:
-            shortestDis = dis
+        wallDistance = mazeDistance(position, food, problem.startingGameState)
+        if wallDistance > heuristic:
+            heuristic = wallDistance
+            maxFoodPosition = food
 
-    return shortestDis
+    return heuristic
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
